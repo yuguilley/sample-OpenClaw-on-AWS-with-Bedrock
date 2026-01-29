@@ -13,7 +13,7 @@
 | 原版 Moltbot | 本项目 |
 |---------------|--------|
 | 多个 API 密钥（Anthropic/OpenAI 等） | **Amazon Bedrock 统一 API + IAM** |
-| 单一模型，固定成本 | **8 个模型：Nova Pro（便宜 73%）作为默认** |
+| 单一模型，固定成本 | **8 个模型可选，Nova 2 Lite（对比 Anthropic 便宜 90%）** |
 | x86 硬件，固定规格 | **x86/ARM 灵活配置，推荐 Graviton（省 20-40%）** |
 | Tailscale VPN | **SSM Session Manager** |
 | 手动配置 | **CloudFormation 一键部署** |
@@ -49,7 +49,7 @@
 ## 核心优势
 
 - 🚀 **Graviton ARM 处理器**：性价比比 x86 高 20-40%
-- 💰 **Nova Pro 默认**：比 Claude 便宜 73%（$0.80 vs $3 每百万 tokens），支持多模态
+- 💰 **Nova 2 Lite 默认**：比 Claude 便宜 90%，日常任务表现出色
 - 🔐 **零密钥管理** - 一个 IAM 角色替代多个 API 密钥（Anthropic、OpenAI、DeepSeek）
 - 🤖 **8 个模型即用** - 无需改代码即可切换 Nova、Claude、DeepSeek、Llama
 - 🏢 **企业级** - 完整的 CloudTrail 审计日志和合规支持

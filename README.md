@@ -17,8 +17,8 @@ English | [简体中文](README_CN.md)
 | Original Moltbot | This Project |
 |-------------------|--------------|
 | Multiple API keys (Anthropic/OpenAI/etc.) | **Amazon Bedrock unified API + IAM** |
-| Single model, fixed cost | **8 models: Nova Pro (73% cheaper) as default** |
-| x86 hardware, fixed specs | **x86/ARM flexible sizing, Graviton recommended (20-40% savings)** |
+| Single model, fixed cost | **8 models available, Nova 2 Lite (90% cheaper vs Anthropic)** |
+| x86 hardware, fixed specs | **x86/ARM flexible, Graviton recommended (20-40% savings)** |
 | Tailscale VPN | **SSM Session Manager** |
 | Manual setup | **CloudFormation (1-click)** |
 | No audit logs | **CloudTrail (automatic)** |
@@ -421,9 +421,9 @@ Security: All AWS traffic via private network
 | Nova Pro | $0.80/1M tokens | $3.20/1M tokens |
 | DeepSeek R1 | $0.55/1M tokens | $2.19/1M tokens |
 
-**Example**: 100 conversations/day with Nova Pro ≈ $8-12/month
+**Example**: 100 conversations/day with Nova 2 Lite ≈ $5-8/month
 
-**Total**: ~$61-70/month for light usage
+**Total**: ~$58-66/month for light usage
 
 ### Cost Optimization
 
@@ -439,9 +439,9 @@ Security: All AWS traffic via private network
 ```yaml
 # In CloudFormation parameters
 ClawdbotModel:
-  - us.amazon.nova-pro-v1:0                     # Default, best balance
-  - global.amazon.nova-2-lite-v1:0              # Most cost-effective
+  - global.amazon.nova-2-lite-v1:0              # Default, most cost-effective
   - global.anthropic.claude-sonnet-4-5-20250929-v1:0  # Most capable
+  - us.amazon.nova-pro-v1:0                     # Balanced performance
   - global.anthropic.claude-opus-4-5-20251101-v1:0    # Advanced reasoning
   - global.anthropic.claude-haiku-4-5-20251001-v1:0   # Fast and efficient
   - us.deepseek.r1-v1:0                         # Open-source reasoning
@@ -449,9 +449,9 @@ ClawdbotModel:
 ```
 
 **Model Selection Guide**:
-- **Nova Pro** (default): Best balance of performance and cost, 73% cheaper than Claude, supports multimodal
-- **Nova 2 Lite**: Most cost-effective for simple tasks, 90% cheaper than Claude
+- **Nova 2 Lite** (default): Most cost-effective, 90% cheaper than Claude, great for everyday tasks
 - **Claude Sonnet 4.5**: Most capable for complex reasoning and coding
+- **Nova Pro**: Best balance of performance and cost, supports multimodal
 - **DeepSeek R1**: Cost-effective open-source reasoning model
 
 ### Instance Types

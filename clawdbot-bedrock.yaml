@@ -19,26 +19,32 @@ Metadata:
 Parameters:
   ClawdbotModel:
     Type: String
-    Default: "global.anthropic.claude-sonnet-4-5-20250929-v1:0"
-    Description: "Bedrock model ID - Global CRIS profiles support 30+ regions worldwide"
+    Default: "global.amazon.nova-2-lite-v1:0"
+    Description: "Bedrock model ID - Nova 2 Lite offers best price-performance for everyday tasks"
     AllowedValues:
+      - "global.amazon.nova-2-lite-v1:0"
       - "global.anthropic.claude-sonnet-4-5-20250929-v1:0"
+      - "us.amazon.nova-pro-v1:0"
       - "global.anthropic.claude-opus-4-5-20251101-v1:0"
       - "global.anthropic.claude-haiku-4-5-20251001-v1:0"
       - "global.anthropic.claude-sonnet-4-20250514-v1:0"
-      - "global.amazon.nova-2-lite-v1:0"
-      - "us.amazon.nova-pro-v1:0"
       - "us.deepseek.r1-v1:0"
-      - "anthropic.claude-3-5-sonnet-20241022-v2:0"
+      - "us.meta.llama3-3-70b-instruct-v1:0"
 
   InstanceType:
     Type: String
-    Default: "t3.medium"
+    Default: "t4g.medium"
+    Description: "Graviton (ARM) recommended for 20-40% better price-performance. x86 also supported."
     AllowedValues:
+      - "t4g.small"
+      - "t4g.medium"
+      - "t4g.large"
+      - "t4g.xlarge"
+      - "c7g.large"
+      - "c7g.xlarge"
       - "t3.small"
       - "t3.medium"
       - "t3.large"
-      - "t3.xlarge"
       - "c5.xlarge"
 
   KeyPairName:
@@ -68,27 +74,21 @@ Parameters:
 Conditions:
   CreateEndpoints: !Equals [!Ref CreateVPCEndpoints, "true"]
   AllowSSH: !Not [!Equals [!Ref AllowedSSHCIDR, "127.0.0.1/32"]]
+  UseGraviton: !Or
+    - !Equals [!Select [0, !Split ['.', !Ref InstanceType]], 't4g']
+    - !Equals [!Select [0, !Split ['.', !Ref InstanceType]], 'c7g']
+    - !Equals [!Select [0, !Split ['.', !Ref InstanceType]], 'm7g']
 
 Mappings:
   RegionMap:
     us-east-1:
-      AMI: "ami-0c7217cdde317cfec"
-    us-east-2:
-      AMI: "ami-0ea3c35c5c3284d82"
-    us-west-1:
-      AMI: "ami-0ce2cb35386fc22e9"
+      AMI: "resolve-ssm"
     us-west-2:
-      AMI: "ami-0aff18ec83b58762f"
+      AMI: "resolve-ssm"
     eu-west-1:
-      AMI: "ami-0e9085e60087ce171"
-    eu-central-1:
-      AMI: "ami-0084a47cc718c111a"
-    ap-southeast-1:
-      AMI: "ami-0497a974f8d5dcef8"
+      AMI: "resolve-ssm"
     ap-northeast-1:
-      AMI: "ami-0d52744d6551d851e"
-    ap-south-1:
-      AMI: "ami-0dee22c13ea7a9a67"
+      AMI: "resolve-ssm"
 
 Resources:
   # ==================== Wait Condition ====================
@@ -304,7 +304,10 @@ Resources:
   ClawdbotInstance:
     Type: AWS::EC2::Instance
     Properties:
-      ImageId: !Sub '{{resolve:ssm:/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id}}'
+      ImageId: !If
+        - UseGraviton
+        - !Sub '{{resolve:ssm:/aws/service/canonical/ubuntu/server/24.04/stable/current/arm64/hvm/ebs-gp3/ami-id}}'
+        - !Sub '{{resolve:ssm:/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id}}'
       InstanceType: !Ref InstanceType
       KeyName: !Ref KeyPairName
       IamInstanceProfile: !Ref ClawdbotInstanceProfile
