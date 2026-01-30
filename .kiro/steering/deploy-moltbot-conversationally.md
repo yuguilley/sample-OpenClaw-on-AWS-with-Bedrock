@@ -73,25 +73,25 @@ Reply with number (1-3) or 'default' for Nova 2 Lite."
 "How much compute power do you need?
 
 💻 Instance options:
-1. t4g.small - $12/month, 2GB RAM
-   • Personal use, light workload
-   • Good for: 1-2 users, basic automation
-   
-2. t4g.medium - $24/month, 4GB RAM (recommended) ⭐
-   • Small teams (3-5 people)
-   • Good for: Multi-channel, moderate workload
-   
-3. t4g.large - $48/month, 8GB RAM
-   • Medium teams (5-10 people)
-   • Good for: Heavy usage, multiple concurrent sessions
-   
-4. c7g.xlarge - $108/month, 8GB RAM
-   • Large teams, high performance
-   • Good for: AI-intensive tasks, low latency requirements
 
-💡 All use Graviton ARM (20-40% cheaper than x86)
+Linux (Graviton ARM - Recommended):
+1. t4g.small - $12/month, 2GB RAM (personal use)
+2. t4g.medium - $24/month, 4GB RAM (small teams) ⭐
+3. t4g.large - $48/month, 8GB RAM (medium teams)
+4. c7g.xlarge - $108/month, 8GB RAM (high performance)
 
-Reply with number (1-4) or 'default' for t4g.medium."
+Linux (x86):
+5. t3.medium - $30/month, 4GB RAM (standard)
+6. c5.xlarge - $122/month, 8GB RAM (compute-intensive)
+
+macOS (Apple Silicon):
+7. mac2.metal - $468/month, M1, 16GB RAM (iOS/macOS dev)
+8. mac2-m2.metal - $632/month, M2, 24GB RAM (latest Silicon)
+
+💡 Graviton offers 20-40% better value than x86
+⚠️ Mac instances have 24-hour minimum allocation
+
+Reply with number (1-8) or 'default' for t4g.medium."
 ```
 
 **Question 4 - Security Level**:

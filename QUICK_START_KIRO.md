@@ -21,6 +21,8 @@ git clone https://github.com/aws-samples/sample-Moltbot-on-AWS-with-Bedrock.git
 cd sample-Moltbot-on-AWS-with-Bedrock
 ```
 
+**Note**: This works for both Linux and Mac deployments. Kiro will ask which platform you want.
+
 ### Step 2: Open as Workspace in Kiro
 
 **Important**: You must open this folder as a workspace for Kiro to load the deployment assistant.
