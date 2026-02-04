@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'Clawdbot - AWS Native Deployment on Mac Instances (Bedrock + SSM + VPC Endpoints)'
+Description: 'OpenClaw - AWS Native Deployment on Mac Instances (Bedrock + SSM + VPC Endpoints)'
 
 Metadata:
   AWS::CloudFormation::Interface:
@@ -7,7 +7,7 @@ Metadata:
       - Label:
           default: "Basic Configuration"
         Parameters:
-          - ClawdbotModel
+          - OpenClawModel
           - MacInstanceType
           - MacAvailabilityZone
           - KeyPairName
@@ -21,7 +21,7 @@ Metadata:
         default: "Mac Availability Zone (check supported AZs first)"
 
 Parameters:
-  ClawdbotModel:
+  OpenClawModel:
     Type: String
     Default: "global.amazon.nova-2-lite-v1:0"
     Description: "Bedrock model ID - Nova 2 Lite offers best price-performance for everyday tasks"
@@ -113,14 +113,14 @@ Mappings:
 
 Resources:
   # ==================== Wait Condition ====================
-  ClawdbotWaitHandle:
+  OpenClawWaitHandle:
     Type: AWS::CloudFormation::WaitConditionHandle
 
-  ClawdbotWaitCondition:
+  OpenClawWaitCondition:
     Type: AWS::CloudFormation::WaitCondition
-    DependsOn: ClawdbotInstance
+    DependsOn: OpenClawInstance
     Properties:
-      Handle: !Ref ClawdbotWaitHandle
+      Handle: !Ref OpenClawWaitHandle
       Timeout: '1800'
       Count: 1
 
@@ -136,7 +136,7 @@ Resources:
           Value: !Sub "${AWS::StackName}-mac-host"
 
   # ==================== VPC and Network ====================
-  ClawdbotVPC:
+  OpenClawVPC:
     Type: AWS::EC2::VPC
     Properties:
       CidrBlock: "10.0.0.0/16"
@@ -146,19 +146,19 @@ Resources:
         - Key: Name
           Value: !Sub "${AWS::StackName}-vpc"
 
-  ClawdbotInternetGateway:
+  OpenClawInternetGateway:
     Type: AWS::EC2::InternetGateway
 
   AttachGateway:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
-      VpcId: !Ref ClawdbotVPC
-      InternetGatewayId: !Ref ClawdbotInternetGateway
+      VpcId: !Ref OpenClawVPC
+      InternetGatewayId: !Ref OpenClawInternetGateway
 
   PublicSubnet:
     Type: AWS::EC2::Subnet
     Properties:
-      VpcId: !Ref ClawdbotVPC
+      VpcId: !Ref OpenClawVPC
       CidrBlock: "10.0.1.0/24"
       MapPublicIpOnLaunch: true
       AvailabilityZone: !Ref MacAvailabilityZone
@@ -169,7 +169,7 @@ Resources:
   PrivateSubnet:
     Type: AWS::EC2::Subnet
     Properties:
-      VpcId: !Ref ClawdbotVPC
+      VpcId: !Ref OpenClawVPC
       CidrBlock: "10.0.2.0/24"
       AvailabilityZone: !Ref MacAvailabilityZone
       Tags:
@@ -179,7 +179,7 @@ Resources:
   PublicRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
-      VpcId: !Ref ClawdbotVPC
+      VpcId: !Ref OpenClawVPC
 
   PublicRoute:
     Type: AWS::EC2::Route
@@ -187,7 +187,7 @@ Resources:
     Properties:
       RouteTableId: !Ref PublicRouteTable
       DestinationCidrBlock: "0.0.0.0/0"
-      GatewayId: !Ref ClawdbotInternetGateway
+      GatewayId: !Ref OpenClawInternetGateway
 
   SubnetRouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
@@ -201,12 +201,12 @@ Resources:
     Condition: CreateEndpoints
     Properties:
       GroupDescription: "Security group for VPC endpoints"
-      VpcId: !Ref ClawdbotVPC
+      VpcId: !Ref OpenClawVPC
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 443
           ToPort: 443
-          SourceSecurityGroupId: !Ref ClawdbotSecurityGroup
+          SourceSecurityGroupId: !Ref OpenClawSecurityGroup
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-vpce-sg"
@@ -216,7 +216,7 @@ Resources:
     Type: AWS::EC2::VPCEndpoint
     Condition: CreateEndpoints
     Properties:
-      VpcId: !Ref ClawdbotVPC
+      VpcId: !Ref OpenClawVPC
       ServiceName: !Sub 'com.amazonaws.${AWS::Region}.bedrock-runtime'
       VpcEndpointType: Interface
       PrivateDnsEnabled: true
@@ -230,7 +230,7 @@ Resources:
     Type: AWS::EC2::VPCEndpoint
     Condition: CreateEndpoints
     Properties:
-      VpcId: !Ref ClawdbotVPC
+      VpcId: !Ref OpenClawVPC
       ServiceName: !Sub 'com.amazonaws.${AWS::Region}.ssm'
       VpcEndpointType: Interface
       PrivateDnsEnabled: true
@@ -243,7 +243,7 @@ Resources:
     Type: AWS::EC2::VPCEndpoint
     Condition: CreateEndpoints
     Properties:
-      VpcId: !Ref ClawdbotVPC
+      VpcId: !Ref OpenClawVPC
       ServiceName: !Sub 'com.amazonaws.${AWS::Region}.ssmmessages'
       VpcEndpointType: Interface
       PrivateDnsEnabled: true
@@ -256,7 +256,7 @@ Resources:
     Type: AWS::EC2::VPCEndpoint
     Condition: CreateEndpoints
     Properties:
-      VpcId: !Ref ClawdbotVPC
+      VpcId: !Ref OpenClawVPC
       ServiceName: !Sub 'com.amazonaws.${AWS::Region}.ec2messages'
       VpcEndpointType: Interface
       PrivateDnsEnabled: true
@@ -266,7 +266,7 @@ Resources:
         - !Ref VPCEndpointSecurityGroup
 
   # ==================== IAM Role ====================
-  ClawdbotInstanceRole:
+  OpenClawInstanceRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -299,23 +299,23 @@ Resources:
                 Action:
                   - 'ssm:PutParameter'
                   - 'ssm:GetParameter'
-                Resource: !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/clawdbot/${AWS::StackName}/*'
+                Resource: !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/openclaw/${AWS::StackName}/*'
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-instance-role"
 
-  ClawdbotInstanceProfile:
+  OpenClawInstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
       Roles:
-        - !Ref ClawdbotInstanceRole
+        - !Ref OpenClawInstanceRole
 
   # ==================== Security Group ====================
-  ClawdbotSecurityGroup:
+  OpenClawSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: "Clawdbot Mac instance security group"
-      VpcId: !Ref ClawdbotVPC
+      GroupDescription: "OpenClaw Mac instance security group"
+      VpcId: !Ref OpenClawVPC
       SecurityGroupIngress:
         - !If
           - AllowSSH
@@ -338,7 +338,7 @@ Resources:
           Value: !Sub "${AWS::StackName}-sg"
 
   # ==================== EC2 Mac Instance ====================
-  ClawdbotInstance:
+  OpenClawInstance:
     Type: AWS::EC2::Instance
     DependsOn: MacDedicatedHost
     Properties:
@@ -351,14 +351,14 @@ Resources:
           - !FindInMap [MacAMIMap, !Ref "AWS::Region", x86]
       InstanceType: !Ref MacInstanceType
       KeyName: !Ref KeyPairName
-      IamInstanceProfile: !Ref ClawdbotInstanceProfile
+      IamInstanceProfile: !Ref OpenClawInstanceProfile
       Tenancy: host
       HostId: !Ref MacDedicatedHost
       NetworkInterfaces:
         - AssociatePublicIpAddress: true
           DeviceIndex: 0
           GroupSet:
-            - !Ref ClawdbotSecurityGroup
+            - !Ref OpenClawSecurityGroup
           SubnetId: !Ref PublicSubnet
       BlockDeviceMappings:
         - DeviceName: /dev/sda1
@@ -369,12 +369,12 @@ Resources:
       UserData:
         Fn::Base64: !Sub |
           #!/bin/bash
-          # macOS setup script for Clawdbot
+          # macOS setup script for OpenClaw
           
-          exec > /tmp/clawdbot-setup.log 2>&1
+          exec > /tmp/openclaw-setup.log 2>&1
           
           echo "=========================================="
-          echo "Clawdbot AWS Mac Setup: $(date)"
+          echo "OpenClaw AWS Mac Setup: $(date)"
           echo "Instance Type: ${MacInstanceType}"
           echo "=========================================="
           
@@ -444,12 +444,12 @@ Resources:
           nvm use 22
           nvm alias default 22
           
-          # Install Clawdbot
+          # Install OpenClaw
           npm config set registry https://registry.npmjs.org/
-          npm install -g clawdbot@latest --timeout=300000 || {
-            echo "Clawdbot installation failed, retrying..."
+          npm install -g openclaw@latest --timeout=300000 || {
+            echo "OpenClaw installation failed, retrying..."
             npm cache clean --force
-            npm install -g clawdbot@latest --timeout=300000
+            npm install -g openclaw@latest --timeout=300000
           }
           
           # Add NVM to shell profile
@@ -482,15 +482,15 @@ Resources:
           cat >> $USER_HOME/.zshrc << 'EOF'
           export AWS_REGION=$(curl -s http://169.254.169.254/latest/meta-data/placement/region 2>/dev/null || echo "us-east-1")
           export AWS_PROFILE=default
-          export CLAWDBOT_MODEL="${ClawdbotModel}"
-          export CLAWDBOT_USE_BEDROCK=true
+          export OPENCLAW_MODEL="${OpenClawModel}"
+          export OPENCLAW_USE_BEDROCK=true
           EOF
           
-          # Configure Clawdbot
-          echo "[7/9] Configuring Clawdbot..."
+          # Configure OpenClaw
+          echo "[7/9] Configuring OpenClaw..."
           
           # Create config directory
-          sudo -u $CURRENT_USER mkdir -p $USER_HOME/.clawdbot
+          sudo -u $CURRENT_USER mkdir -p $USER_HOME/.openclaw
           
           # Generate Gateway Token
           GATEWAY_TOKEN=$(openssl rand -hex 24)
@@ -510,7 +510,7 @@ Resources:
           INSTANCE_ID=${!INSTANCE_ID:-"unknown"}
           
           # Create Bedrock configuration file
-          sudo -u $CURRENT_USER cat > $USER_HOME/.clawdbot/clawdbot.json << 'JSONEOF'
+          sudo -u $CURRENT_USER cat > $USER_HOME/.openclaw/openclaw.json << 'JSONEOF'
           {
             "gateway": {
               "mode": "local",
@@ -554,26 +554,26 @@ Resources:
           JSONEOF
           
           # Replace placeholders
-          sed -i '' "s/GATEWAY_TOKEN_PLACEHOLDER/$GATEWAY_TOKEN/g" $USER_HOME/.clawdbot/clawdbot.json
-          sed -i '' "s/REGION_PLACEHOLDER/$AWS_REGION/g" $USER_HOME/.clawdbot/clawdbot.json
-          sed -i '' "s|MODEL_ID_PLACEHOLDER|${ClawdbotModel}|g" $USER_HOME/.clawdbot/clawdbot.json
+          sed -i '' "s/GATEWAY_TOKEN_PLACEHOLDER/$GATEWAY_TOKEN/g" $USER_HOME/.openclaw/openclaw.json
+          sed -i '' "s/REGION_PLACEHOLDER/$AWS_REGION/g" $USER_HOME/.openclaw/openclaw.json
+          sed -i '' "s|MODEL_ID_PLACEHOLDER|${OpenClawModel}|g" $USER_HOME/.openclaw/openclaw.json
           
-          # Install and start Clawdbot gateway using launchd (macOS native)
-          echo "[8/9] Installing Clawdbot gateway service..."
+          # Install and start OpenClaw gateway using launchd (macOS native)
+          echo "[8/9] Installing OpenClaw gateway service..."
           
-          # Create launchd plist for clawdbot gateway
-          cat > /Library/LaunchDaemons/com.clawdbot.gateway.plist << 'PLISTEOF'
+          # Create launchd plist for openclaw gateway
+          cat > /Library/LaunchDaemons/com.openclaw.gateway.plist << 'PLISTEOF'
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
           <dict>
             <key>Label</key>
-            <string>com.clawdbot.gateway</string>
+            <string>com.openclaw.gateway</string>
             <key>ProgramArguments</key>
             <array>
               <string>/bin/bash</string>
               <string>-c</string>
-              <string>source /Users/ec2-user/.nvm/nvm.sh && clawdbot gateway</string>
+              <string>source /Users/ec2-user/.nvm/nvm.sh && openclaw gateway</string>
             </array>
             <key>UserName</key>
             <string>ec2-user</string>
@@ -591,45 +591,71 @@ Resources:
             <key>KeepAlive</key>
             <true/>
             <key>StandardOutPath</key>
-            <string>/tmp/clawdbot-gateway.log</string>
+            <string>/tmp/openclaw-gateway.log</string>
             <key>StandardErrorPath</key>
-            <string>/tmp/clawdbot-gateway.err</string>
+            <string>/tmp/openclaw-gateway.err</string>
           </dict>
           </plist>
           PLISTEOF
           
           # Load and start the service
-          launchctl load -w /Library/LaunchDaemons/com.clawdbot.gateway.plist || true
+          launchctl load -w /Library/LaunchDaemons/com.openclaw.gateway.plist || true
+          
+          # Enable messaging channels
+          echo "[8.5/9] Enabling messaging channels..."
+          sudo -u $CURRENT_USER bash << 'CHANNELSCRIPT'
+          export HOME=/Users/ec2-user
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+          
+          # Enable WhatsApp
+          openclaw plugins enable whatsapp || echo "WhatsApp plugin enable failed"
+          
+          # Enable Telegram
+          openclaw plugins enable telegram || echo "Telegram plugin enable failed"
+          
+          # Enable Discord
+          openclaw plugins enable discord || echo "Discord plugin enable failed"
+          
+          # Enable Slack
+          openclaw plugins enable slack || echo "Slack plugin enable failed"
+          
+          # Enable iMessage
+          openclaw plugins enable imessage || echo "iMessage plugin enable failed"
+          
+          # Enable Google Chat
+          openclaw plugins enable googlechat || echo "Google Chat plugin enable failed"
+          CHANNELSCRIPT
           
           # Wait for gateway to start
           sleep 5
           
           # Verify gateway is running
           if lsof -i :18789 > /dev/null 2>&1; then
-            echo "Clawdbot gateway started successfully"
+            echo "OpenClaw gateway started successfully"
           else
-            echo "Warning: Gateway may not have started, check /tmp/clawdbot-gateway.log"
+            echo "Warning: Gateway may not have started, check /tmp/openclaw-gateway.log"
           fi
           
           # Save token
-          echo "$GATEWAY_TOKEN" > $USER_HOME/.clawdbot/gateway_token.txt
-          chown $CURRENT_USER:staff $USER_HOME/.clawdbot/gateway_token.txt
+          echo "$GATEWAY_TOKEN" > $USER_HOME/.openclaw/gateway_token.txt
+          chown $CURRENT_USER:staff $USER_HOME/.openclaw/gateway_token.txt
           
           # Save to SSM Parameter Store
           STACK_NAME="${AWS::StackName}"
           aws ssm put-parameter \
-            --name "/clawdbot/$STACK_NAME/gateway-token" \
+            --name "/openclaw/$STACK_NAME/gateway-token" \
             --value "$GATEWAY_TOKEN" \
             --type "SecureString" \
             --region $AWS_REGION \
             --overwrite || echo "Failed to save token to SSM"
           
           # Save instance info
-          echo "$INSTANCE_ID" > $USER_HOME/.clawdbot/instance_id.txt
-          echo "$AWS_REGION" > $USER_HOME/.clawdbot/region.txt
+          echo "$INSTANCE_ID" > $USER_HOME/.openclaw/instance_id.txt
+          echo "$AWS_REGION" > $USER_HOME/.openclaw/region.txt
           
           # Create access instructions
-          echo "Clawdbot Access Instructions" > $USER_HOME/ACCESS_INSTRUCTIONS.txt
+          echo "OpenClaw Access Instructions" > $USER_HOME/ACCESS_INSTRUCTIONS.txt
           echo "Run on LOCAL: aws ssm start-session --target $INSTANCE_ID --region $AWS_REGION --document-name AWS-StartPortForwardingSession --parameters '{\"portNumber\":[\"18789\"],\"localPortNumber\":[\"18789\"]}'" >> $USER_HOME/ACCESS_INSTRUCTIONS.txt
           echo "Then open: http://localhost:18789/?token=$GATEWAY_TOKEN" >> $USER_HOME/ACCESS_INSTRUCTIONS.txt
           chown $CURRENT_USER:staff $USER_HOME/ACCESS_INSTRUCTIONS.txt
@@ -639,10 +665,10 @@ Resources:
           #!/bin/bash
           INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
           REGION=$(curl -s http://169.254.169.254/latest/meta-data/placement/region)
-          TOKEN=$(cat /Users/ec2-user/.clawdbot/gateway_token.txt)
+          TOKEN=$(cat /Users/ec2-user/.openclaw/gateway_token.txt)
           
           echo "=========================================="
-          echo "Clawdbot SSM Port Forwarding (Mac)"
+          echo "OpenClaw SSM Port Forwarding (Mac)"
           echo "=========================================="
           echo ""
           echo "Run on your local computer:"
@@ -663,22 +689,22 @@ Resources:
           
           # Complete
           echo "[9/9] Complete!"
-          echo "SUCCESS" > $USER_HOME/.clawdbot/setup_status.txt
-          echo "Setup completed: $(date)" >> $USER_HOME/.clawdbot/setup_status.txt
-          echo "Token: $GATEWAY_TOKEN" >> $USER_HOME/.clawdbot/setup_status.txt
-          echo "Mac Instance Type: ${MacInstanceType}" >> $USER_HOME/.clawdbot/setup_status.txt
+          echo "SUCCESS" > $USER_HOME/.openclaw/setup_status.txt
+          echo "Setup completed: $(date)" >> $USER_HOME/.openclaw/setup_status.txt
+          echo "Token: $GATEWAY_TOKEN" >> $USER_HOME/.openclaw/setup_status.txt
+          echo "Mac Instance Type: ${MacInstanceType}" >> $USER_HOME/.openclaw/setup_status.txt
           
           # Signal CloudFormation
           COMPLETE_URL="http://localhost:18789/?token=$GATEWAY_TOKEN"
           
           # Use curl to signal (cfn-signal not available on macOS by default)
-          SIGNAL_JSON="{\"Status\":\"SUCCESS\",\"Reason\":\"Clawdbot ready on Mac\",\"UniqueId\":\"clawdbot-mac\",\"Data\":\"$COMPLETE_URL\"}"
-          curl -X PUT -H 'Content-Type:' --data-binary "$SIGNAL_JSON" '${ClawdbotWaitHandle}'
+          SIGNAL_JSON="{\"Status\":\"SUCCESS\",\"Reason\":\"OpenClaw ready on Mac\",\"UniqueId\":\"openclaw-mac\",\"Data\":\"$COMPLETE_URL\"}"
+          curl -X PUT -H 'Content-Type:' --data-binary "$SIGNAL_JSON" '${OpenClawWaitHandle}'
           
           echo "Signal sent successfully"
           
           echo "=========================================="
-          echo "Clawdbot Mac installation complete!"
+          echo "OpenClaw Mac installation complete!"
           echo "Instance Type: ${MacInstanceType}"
           echo "Token: $GATEWAY_TOKEN"
           echo "=========================================="
@@ -697,7 +723,7 @@ Outputs:
   Step2PortForwarding:
     Description: "STEP 2: Run this command on LOCAL computer (keep terminal open)"
     Value: !Sub |
-      aws ssm start-session --target ${ClawdbotInstance} --region ${AWS::Region} --document-name AWS-StartPortForwardingSession --parameters '{"portNumber":["18789"],"localPortNumber":["18789"]}'
+      aws ssm start-session --target ${OpenClawInstance} --region ${AWS::Region} --document-name AWS-StartPortForwardingSession --parameters '{"portNumber":["18789"],"localPortNumber":["18789"]}'
 
   Step3AccessURL:
     Description: "STEP 3: Open this URL in browser"
@@ -709,15 +735,15 @@ Outputs:
           - 0
           - !Split 
             - '"}'
-            - !GetAtt ClawdbotWaitCondition.Data
+            - !GetAtt OpenClawWaitCondition.Data
 
   Step4StartChatting:
-    Description: "STEP 4: Start using Clawdbot!"
-    Value: "Connect WhatsApp, Telegram, Discord. See README: https://github.com/JiaDe-Wu/clawdbot-aws-bedrock"
+    Description: "STEP 4: Start using OpenClaw!"
+    Value: "Connect WhatsApp, Telegram, Discord. See README: https://github.com/aws-samples/sample-OpenClaw-on-AWS-with-Bedrock"
 
   InstanceId:
     Description: "EC2 Mac Instance ID (for reference)"
-    Value: !Ref ClawdbotInstance
+    Value: !Ref OpenClawInstance
 
   MacInstanceType:
     Description: "Mac instance type in use"
@@ -729,7 +755,7 @@ Outputs:
 
   BedrockModel:
     Description: "Bedrock model in use"
-    Value: !Ref ClawdbotModel
+    Value: !Ref OpenClawModel
 
   MonthlyCost:
     Description: "Estimated monthly cost (USD) - Mac instances require 24-hour minimum allocation"
